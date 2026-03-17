@@ -1,0 +1,15 @@
+# Rust build files
+/target/
+**/*.rs.bk
+
+# Environment files
+.env
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
