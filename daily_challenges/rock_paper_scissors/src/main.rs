@@ -23,22 +23,22 @@ struct MatchResult {
 }
 
 fn generate_opponent_move() -> i32 {
-    rand::random_range(0..=2)
+    rand::random_range(1..=3)
 }
 
-fn get_round_result(player_pick: &i32) -> Verdict {
+fn get_round_result(player_move: &i32) -> Verdict {
     let opponent_move = generate_opponent_move();
-    let player_move = player_pick - 1;
+
 
     let player_move_enum = match player_move {
-        0 => Move::Rock,
-        1 => Move::Paper,
+        1 => Move::Rock,
+        2 => Move::Paper,
         _ => Move::Scissors,
     };
 
     let opponent_move_enum = match opponent_move {
-        0 => Move::Rock,
-        1 => Move::Paper,
+        1 => Move::Rock,
+        2 => Move::Paper,
         _ => Move::Scissors,
     };
 
@@ -66,7 +66,7 @@ fn update_match_result(round_result: Verdict, match_result: &mut MatchResult) {
 
 fn get_player_input() -> i32 {
     loop {
-        println!("{}", "Pick a number to play");
+        println!("{}", "Pick a number to play(then hit Enter)");
 
         let mut input = String::new();
         io::stdin()
@@ -92,8 +92,8 @@ fn print_round_result(player_move: Move, opponent_move: Move, verdict: &Verdict)
 
     match verdict {
         Verdict::Win => println!("{}", "You win!".green()),
-        Verdict::Lose => println!("{}", "You lose!".red()),
-        Verdict::Draw => println!("{}", "You draw!".yellow()),
+        Verdict::Lose => println!("{}", "Opponent wins!".red()),
+        Verdict::Draw => println!("{}", "It's a draw!".yellow()),
     }
 }
 
@@ -101,10 +101,10 @@ fn print_match_result(match_result: &MatchResult) {
     println!(" ");
 
     let summary = format!(
-        "Final Score:\nYou: {}\nOpponent: {}\nRounds: {}",
+        "Final Score:\nRounds: {}\nYou: {}\nOpponent: {}",
+        match_result.rounds,
         match_result.player_score,
-        match_result.opponent_score,
-        match_result.rounds
+        match_result.opponent_score
     );
 
     if match_result.player_score > match_result.opponent_score {
@@ -119,43 +119,66 @@ fn print_match_result(match_result: &MatchResult) {
     }
 }
 
+fn ask_play_again() -> bool {
+    loop {
+        println!("{}", "Do you want to play again? (y/n)".yellow());
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Failed to read line");
+
+        match input.trim().to_lowercase().as_str() {
+            "y" => return true,
+            "n" => return false,
+            _ => println!("{}", "\nPlease enter 'y' or 'n'".red()),
+        }
+    }
+}
+
 fn main() {
-    println!(
-        "{}",
-        "                   Rock Paper Scissors Game                  "
-            .on_blue()
-            .bold()
-    );
+    loop {
 
-    println!("{}", "Here are the rules: ".blue());
-    println!("{}", "Use the numbers to play ... e.g. 1 for Rock");
-    println!("{}", "1: Rock ");
-    println!("{}", "2: Paper ");
-    println!("{}", "3: Scissors ");
-
-    let rounds: i32 = 3;
-
-    let mut match_result = MatchResult {
-        player_score: 0,
-        opponent_score: 0,
-        rounds: 0,
-    };
-
-    for _ in 1..=rounds {
-        println!("\n");
-
+        println!(" ");
         println!(
             "{}",
-            format!(". Round {} .", match_result.rounds + 1)
-                .on_bright_cyan()
+            "                   Rock Paper Scissors Game                  "
+                .on_blue()
                 .bold()
         );
 
-        let player_pick = get_player_input();
+        println!("{}", "Here are the rules: ".blue());
+        println!("{}", "Use the numbers to play ... e.g. 1 for Rock");
+        println!("{}", "1: Rock ");
+        println!("{}", "2: Paper ");
+        println!("{}", "3: Scissors ");
 
-        let round_result = get_round_result(&player_pick);
-        update_match_result(round_result, &mut match_result);
+        let rounds: i32 = 3;
+
+        let mut match_result = MatchResult {
+            player_score: 0,
+            opponent_score: 0,
+            rounds: 0,
+        };
+
+        for _ in 1..=rounds {
+            println!("\n");
+
+            println!(
+                "{}",
+                format!(". Round {}/{} .", match_result.rounds + 1,&rounds)
+                    .on_bright_cyan()
+                    .bold()
+            );
+
+            let player_pick = get_player_input();
+
+            let round_result = get_round_result(&player_pick);
+            update_match_result(round_result, &mut match_result);
+        }
+
+        print_match_result(&match_result);
+
+        if !ask_play_again() {
+            println!("{}", "Thanks for playing!".green().bold());
+            break;
+        }
     }
-
-    print_match_result(&match_result);
 }
